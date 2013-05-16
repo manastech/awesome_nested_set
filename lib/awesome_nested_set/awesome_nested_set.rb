@@ -540,7 +540,7 @@ module CollectiveIdea #:nodoc:
 
         # on creation, set automatically lft and rgt to the end of the tree
         def set_default_left_and_right
-          highest_right_row = nested_set_scope(:order => "#{quoted_right_column_full_name} desc").limit(1).lock(true).first
+          highest_right_row = nested_set_scope(:order => "#{quoted_right_column_full_name} desc").limit(1).first
           maxright = highest_right_row ? (highest_right_row[right_column_name] || 0) : 0
           # adds the new node to the right of all existing nodes
           self[left_column_name] = maxright + 1
@@ -571,7 +571,7 @@ module CollectiveIdea #:nodoc:
             reload_nested_set
             # select the rows in the model that extend past the deletion point and apply a lock
             nested_set_scope.where(["#{quoted_left_column_full_name} >= ?", left]).
-                                  select(id).lock(true)
+                                  select(id)
 
             if acts_as_nested_set_options[:dependent] == :destroy
               descendants.each do |model|
@@ -601,8 +601,7 @@ module CollectiveIdea #:nodoc:
         # reload left, right, and parent
         def reload_nested_set
           reload(
-            :select => "#{quoted_left_column_full_name}, #{quoted_right_column_full_name}, #{quoted_parent_column_full_name}",
-            :lock => true
+            :select => "#{quoted_left_column_full_name}, #{quoted_right_column_full_name}, #{quoted_parent_column_full_name}"
           )
         end
 
@@ -643,7 +642,7 @@ module CollectiveIdea #:nodoc:
               a, b, c, d = [self[left_column_name], self[right_column_name], bound, other_bound].sort
 
               # select the rows in the model between a and d, and apply a lock
-              self.class.base_class.select('id').lock(true).where(
+              self.class.base_class.select('id').where(
                 ["#{quoted_left_column_full_name} >= :a and #{quoted_right_column_full_name} <= :d", {:a => a, :d => d}]
               )
 
